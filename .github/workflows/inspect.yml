@@ -1,0 +1,30 @@
+name: Inspect MC API
+
+on: workflow_dispatch
+
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with: { distribution: temurin, java-version: "25" }
+      - uses: gradle/actions/setup-gradle@v4
+      - name: Resolve deps
+        working-directory: mod
+        run: gradle dependencies --configuration compileClasspath --no-daemon -q > /dev/null || true
+      - name: Dump signatures
+        run: |
+          MC=$(find ~/.gradle -name "minecraft-*26.1.2*.jar" -size +5M | grep -v sources | head -1)
+          [ -z "$MC" ] && MC=$(find ~/.gradle mod/.gradle -name "*.jar" -size +15M 2>/dev/null | xargs -I{} sh -c 'unzip -l {} | grep -q "net/minecraft/client/gui/components/ChatComponent.class" && echo {}' | head -1)
+          echo "MC jar: $MC"
+          echo "== gui classes with Graphics =="
+          unzip -l "$MC" | grep -oE "net/minecraft/client/gui/[A-Za-z]*Graphics[A-Za-z]*\.class"
+          for c in net.minecraft.client.gui.components.ChatComponent net.minecraft.client.player.LocalPlayer net.minecraft.world.entity.player.Player; do
+            echo "== $c =="; javap -cp "$MC" "$c" | grep -iE "scale|width|height|render|extract|message|overlay|client" || true
+          done
+          G=$(unzip -l "$MC" | grep -oE "net/minecraft/client/gui/[A-Za-z]*Graphics[A-Za-z]*\.class" | head -1 | sed 's/\.class//; s#/#.#g')
+          echo "== $G (fill/drawString/text/pose) =="; javap -cp "$MC" "$G" | grep -iE " fill\(| drawString| text\(|pose\(" || true
+          FAPI=$(find ~/.gradle -name "fabric-rendering-v1*.jar" | grep -v sources | head -1)
+          echo "== HudElement ($FAPI) =="
+          javap -cp "$FAPI" net.fabricmc.fabric.api.client.rendering.v1.hud.HudElement || true
