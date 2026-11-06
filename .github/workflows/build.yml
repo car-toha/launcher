@@ -28,6 +28,8 @@ jobs:
   apk:
     needs: mod
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
       - uses: actions/checkout@v5
       - uses: actions/download-artifact@v4
@@ -85,3 +87,13 @@ jobs:
         with:
           name: MobileCraft-apk
           path: out/MobileCraft-arm64.apk
+
+      - name: Publish release (прямая ссылка на APK)
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release delete latest --repo "$GITHUB_REPOSITORY" --yes --cleanup-tag || true
+          gh release create latest out/MobileCraft-arm64.apk \
+            --repo "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" \
+            --title "MobileCraft (последняя сборка)" \
+            --notes "Сборка из коммита ${GITHUB_SHA::7}. Установить: скачать MobileCraft-arm64.apk и открыть."
