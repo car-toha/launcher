@@ -70,6 +70,11 @@ edit(MA, [
     ("showLastMonth = GuideProgress.isPlayed(GuideKeys.Main) && !isImporting", "showLastMonth = false"),
 ])
 
+print("Жесты как в Bedrock: тап — поставить, удержание — ломать")
+edit("ZalithLauncher/src/main/java/com/movtery/zalithlauncher/setting/AllSettings.kt", [
+    ('boolSetting("gestureControl", false)', 'boolSetting("gestureControl", true)'),
+])
+
 print("Тихий импорт модпака (без вопросов об имени версии)")
 edit("ZalithLauncher/src/main/java/com/movtery/zalithlauncher/viewmodel/ModpackImportViewModel.kt", [
     ("    suspend fun waitForVersionName(name: String): String {\n",
