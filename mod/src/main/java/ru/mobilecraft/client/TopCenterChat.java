@@ -3,6 +3,7 @@ package ru.mobilecraft.client;
 import net.fabricmc.fabric.api.client.rendering.v1.hud.HudElement;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.ChatComponent;
+import net.minecraft.client.gui.screens.ChatScreen;
 
 /**
  * Перерисовывает ванильный чат со сдвигом и масштабом: компактно, сверху по центру.
@@ -23,15 +24,18 @@ public final class TopCenterChat {
     public static HudElement wrap(HudElement vanilla) {
         return (graphics, deltaTracker) -> {
             Minecraft mc = Minecraft.getInstance();
-            ChatComponent chat = mc.gui.getChat();
-
             float guiW = mc.getWindow().getGuiScaledWidth();
             float guiH = mc.getWindow().getGuiScaledHeight();
-            float chatScale = (float) chat.getScale();
+            float chatScale = mc.options.chatScale().get().floatValue();
+            boolean focused = mc.screen instanceof ChatScreen;
+            int widthPx = ChatComponent.getWidth(mc.options.chatWidth().get());
+            int heightPx = ChatComponent.getHeight(focused
+                    ? mc.options.chatHeightFocused().get()
+                    : mc.options.chatHeightUnfocused().get());
 
             // Прямоугольник ванильного чата в GUI-координатах
-            float chatW = (chat.getWidth() + 12) * chatScale;
-            float chatTop = guiH - 40 - chat.getHeight() * chatScale;
+            float chatW = (widthPx + 12) * chatScale;
+            float chatTop = guiH - 40 - heightPx * chatScale;
 
             float s = EXTRA_SCALE;
             float tx = (guiW - s * chatW) / 2f;
@@ -40,7 +44,7 @@ public final class TopCenterChat {
             graphics.pose().pushMatrix();
             graphics.pose().translate(tx, ty);
             graphics.pose().scale(s, s);
-            vanilla.render(graphics, deltaTracker);
+            vanilla.extractRenderState(graphics, deltaTracker);
             graphics.pose().popMatrix();
 
             Layout.chatLeft = tx;

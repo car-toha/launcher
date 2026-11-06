@@ -40,10 +40,10 @@ public final class LastCommand {
     public static void repeat(Minecraft mc) {
         if (mc.player == null || mc.getConnection() == null) return;
         if (last == null) {
-            mc.player.displayClientMessage(Component.translatable("mobilecraft.cmd.none"), true);
+            mc.player.sendOverlayMessage(Component.translatable("mobilecraft.cmd.none"));
             return;
         }
         mc.getConnection().sendCommand(last);
-        mc.player.displayClientMessage(Component.translatable("mobilecraft.cmd.sent", last), true);
+        mc.player.sendOverlayMessage(Component.translatable("mobilecraft.cmd.sent", last));
     }
 }

@@ -3,7 +3,7 @@ package ru.mobilecraft.client;
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.network.chat.Component;
 
 /**
@@ -30,14 +30,13 @@ public final class MicToggle {
         if (key == null) {
             on = false;
             if (mc.player != null)
-                mc.player.displayClientMessage(Component.translatable("mobilecraft.mic.missing"), true);
+                mc.player.sendOverlayMessage(Component.translatable("mobilecraft.mic.missing"));
             return;
         }
         on = !on;
         key.setDown(on);
         if (mc.player != null)
-            mc.player.displayClientMessage(
-                    Component.translatable(on ? "mobilecraft.mic.on" : "mobilecraft.mic.off"), true);
+            mc.player.sendOverlayMessage(Component.translatable(on ? "mobilecraft.mic.on" : "mobilecraft.mic.off"));
     }
 
     public static void tick(Minecraft mc) {
@@ -67,13 +66,13 @@ public final class MicToggle {
     }
 
     /** Красная точка «REC» справа от чата, пока микрофон включён. */
-    public static void renderIndicator(GuiGraphics g, DeltaTracker dt) {
+    public static void renderIndicator(GuiGraphicsExtractor g, DeltaTracker dt) {
         if (!on) return;
         Minecraft mc = Minecraft.getInstance();
         int x = Math.round(TopCenterChat.Layout.chatRight) + 4;
         int y = Math.round(TopCenterChat.Layout.chatTop) + 2;
         boolean blink = (System.currentTimeMillis() / 500) % 2 == 0;
         g.fill(x, y, x + 6, y + 6, blink ? 0xFFFF3030 : 0xFFAA2020);
-        g.drawString(mc.font, "MIC", x + 9, y - 1, 0xFFFFFFFF, true);
+        g.text(mc.font, "MIC", x + 9, y - 1, 0xFFFFFFFF, true);
     }
 }
