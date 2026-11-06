@@ -1,0 +1,7 @@
+{
+  "mobilecraft.mic.on": "🎤 Mic ON",
+  "mobilecraft.mic.off": "Mic OFF",
+  "mobilecraft.mic.missing": "Simple Voice Chat not found",
+  "mobilecraft.cmd.none": "No commands yet",
+  "mobilecraft.cmd.sent": "Repeat: /%s"
+}

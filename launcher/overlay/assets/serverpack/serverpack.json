@@ -1,0 +1,18 @@
+{
+  "app_name": "MobileCraft",
+  "server": {
+    "name": "Мой сервер",
+    "address": "play.example.ru:25565"
+  },
+  "auth": "offline",
+  "minecraft_version": "26.1.2",
+  "fabric_loader": "0.19.2",
+  "profile_id": "fabric-loader-0.19.2-26.1.2",
+  "mods": [
+    { "modrinth": "fabric-api" },
+    { "modrinth": "simple-voice-chat" },
+    { "modrinth": "malilib" },
+    { "modrinth": "litematica" },
+    { "asset": "serverpack/mobilecraft.jar" }
+  ]
+}

@@ -1,0 +1,60 @@
+name: Build MobileCraft
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+
+env:
+  # Тег Zalith Launcher 2, на котором основан форк
+  ZALITH_REF: "2.4.11"
+
+jobs:
+  mod:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with: { distribution: temurin, java-version: "25" }
+      - uses: gradle/actions/setup-gradle@v4
+      - name: Build mod
+        working-directory: mod
+        run: gradle build --no-daemon
+      - uses: actions/upload-artifact@v4
+        with:
+          name: mobilecraft-mod
+          path: mod/build/libs/mobilecraft-*.jar
+
+  apk:
+    needs: mod
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with: { name: mobilecraft-mod, path: modjar }
+
+      # Форк лучше держать отдельным репозиторием с внесёнными правками из INTEGRATION.md.
+      # Здесь — вариант «клонировать и наложить overlay».
+      - name: Clone launcher
+        run: git clone --recursive --depth 1 --branch "$ZALITH_REF" https://github.com/ZalithLauncher/ZalithLauncher2.git launcher-src
+
+      - name: Apply overlay
+        run: |
+          APP=$(dirname "$(find launcher-src -path '*/src/main/AndroidManifest.xml' -not -path '*/build/*' | grep -m1 -i app)")
+          echo "App module: $APP"
+          mkdir -p "$APP/assets/serverpack" "$APP/java/ru/mobilecraft/pack"
+          cp -r launcher/overlay/assets/serverpack/* "$APP/assets/serverpack/"
+          cp launcher/overlay/kotlin/ru/mobilecraft/pack/*.kt "$APP/java/ru/mobilecraft/pack/"
+          cp "$(ls modjar/mobilecraft-*.jar | grep -v sources | head -1)" "$APP/assets/serverpack/mobilecraft.jar"
+
+      - uses: actions/setup-java@v4
+        with: { distribution: temurin, java-version: "21" }
+
+      - name: Build APK
+        working-directory: launcher-src
+        run: ./gradlew assembleDebug --no-daemon
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: mobilecraft-apk
+          path: launcher-src/**/build/outputs/apk/**/*.apk
